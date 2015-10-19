@@ -18,7 +18,13 @@ export class Matcher extends Backbone.Model {
         if (firstWord && rest.length > 0) {
             while (matches) {
                 let char = firstWord.get('chars').at(index),
-                    str = buffer.value() + char.value();
+                    str;
+
+                if (!char) {
+                    break;
+                }
+
+                str = buffer.value() + char.value();
 
                 matches = _.some(rest, (word) => {
                     return word.matchStart(str, position);
@@ -46,7 +52,13 @@ export class Matcher extends Backbone.Model {
         if (firstWord && rest.length > 0) {
             while (matches) {
                 let char = firstWord.get('chars').atEnd(index),
-                    str = char.value() + buffer.value();
+                    str;
+
+                if (!char) {
+                    break;
+                }
+
+                str = char.value() + buffer.value();
 
                 matches = _.some(rest, (word) => {
                     return word.matchEnd(str, position);
