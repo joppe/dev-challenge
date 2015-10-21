@@ -1,9 +1,9 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
-import {Words} from 'js/view/Words';
-import {Input} from 'js/view/Input';
-import {Regex} from 'js/view/Regex';
-import {Process} from 'js/view/Process';
+import {ReactView} from 'js/view/ReactView.js';
+import {Words} from 'js/view/Words.js';
+import {Input} from 'js/view/Input.js';
+import {Regex} from 'js/view/Regex.js';
+import {Process} from 'js/view/Process.js';
 
 export class App extends ReactView {
     handleReset() {
