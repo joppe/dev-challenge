@@ -1,6 +1,6 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
-import {Word} from 'js/view/Word';
+import {ReactView} from 'js/view/ReactView.js';
+import {Word} from 'js/view/Word.js';
 
 export class Words extends ReactView {
     constructor(props) {

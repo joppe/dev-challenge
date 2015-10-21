@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import {Char} from 'js/model/Char';
+import {Char} from 'js/model/Char.js';
 
 export class Chars extends Backbone.Collection {
     get model() {

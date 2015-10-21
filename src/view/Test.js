@@ -1,5 +1,5 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
+import {ReactView} from 'js/view/ReactView.js';
 
 export class Test extends ReactView {
     handleTest() {

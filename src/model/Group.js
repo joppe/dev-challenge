@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import {Words} from 'js/collection/Words';
+import {Words} from 'js/collection/Words.js';
 
 export const PREFFIX = 1;
 export const SUFFIX = 2;

@@ -1,6 +1,6 @@
 import React from 'react';
-import {Regex} from 'js/model/Regex';
-import {App} from 'js/view/App';
+import {Regex} from 'js/model/Regex.js';
+import {App} from 'js/view/App.js';
 
 let r = window.r = new Regex();
 

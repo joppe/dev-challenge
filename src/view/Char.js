@@ -1,5 +1,5 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
+import {ReactView} from 'js/view/ReactView.js';
 
 const DEFAULT_COLOR = 'transparent';
 const TRY_COLOR = '#79A4B3';

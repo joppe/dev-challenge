@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import {Buffer} from 'js/model/Buffer';
+import {Buffer} from 'js/model/Buffer.js';
 
 export class Matcher extends Backbone.Model {
     get defaults() {

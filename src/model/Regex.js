@@ -1,8 +1,8 @@
 import Backbone from 'backbone';
-import {Group} from 'js/model/Group';
-import {Words} from 'js/collection/Words';
-import {Matcher} from 'js/model/Matcher';
-import {Compiler} from 'js/model/Compiler';
+import {Group} from 'js/model/Group.js';
+import {Words} from 'js/collection/Words.js';
+import {Matcher} from 'js/model/Matcher.js';
+import {Compiler} from 'js/model/Compiler.js';
 
 export class Regex extends Backbone.Model {
     get defaults() {

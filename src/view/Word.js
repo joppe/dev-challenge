@@ -1,6 +1,6 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
-import {Char} from 'js/view/Char';
+import {ReactView} from 'js/view/ReactView.js';
+import {Char} from 'js/view/Char.js';
 
 export class Word extends ReactView {
     handleRemove() {

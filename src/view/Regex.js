@@ -1,8 +1,8 @@
 import React from 'react';
-import {ReactView} from 'js/view/ReactView';
-import {Test} from 'js/view/Test';
-import {Result as TestResult} from 'js/model/Result';
-import {Result} from 'js/view/Result';
+import {ReactView} from 'js/view/ReactView.js';
+import {Test} from 'js/view/Test.js';
+import {Result as TestResult} from 'js/model/Result.js';
+import {Result} from 'js/view/Result.js';
 
 export class Regex extends ReactView {
     constructor(props) {

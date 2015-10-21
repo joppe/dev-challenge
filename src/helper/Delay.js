@@ -1,4 +1,4 @@
-import {Listener} from 'js/helper/Listener';
+import {Listener} from 'js/helper/Listener.js';
 
 export class Delay extends Listener {
     constructor(func) {

@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import {Chars} from 'js/collection/Chars';
+import {Chars} from 'js/collection/Chars.js';
 
 export class Word extends Backbone.Model {
     get defaults() {

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Listener} from 'js/helper/Listener';
+import {Listener} from 'js/helper/Listener.js';
 
 export class ReactView extends React.Component {
     constructor(props) {

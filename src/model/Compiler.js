@@ -1,7 +1,7 @@
 import Backbone from 'backbone';
-import {Buffer} from 'js/model/Buffer';
-import {PREFFIX} from 'js/model/Group';
-import {SUFFIX} from 'js/model/Group';
+import {Buffer} from 'js/model/Buffer.js';
+import {PREFFIX} from 'js/model/Group.js';
+import {SUFFIX} from 'js/model/Group.js';
 
 let escapeRegExp;
 
