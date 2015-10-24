@@ -1,5 +1,9 @@
 .idea
-node_modules
-web/vendor
-web/js/**/*.js
-!web/js/system.conf.js
+regex/node_modules
+regex/web/vendor
+regex/web/js/**/*.js
+!regex/web/js/system.conf.js
+logo-animation/node_modules
+logo-animation/web/vendor
+logo-animation/web/js/**/*.js
+!logo-animation/web/js/system.conf.js

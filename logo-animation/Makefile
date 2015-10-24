@@ -2,9 +2,6 @@ SHELL := /bin/bash
 
 pwd := $(shell pwd)
 
-bower:
-	bower install
-
 npm:
 	npm install
 
@@ -18,6 +15,9 @@ babel:
 babel-watch:
 	node_modules/babel/bin/babel.js $(pwd)/src/ --stage 1 --out-dir $(pwd)/web/js --modules system --watch
 
-setup: npm bower symlinks babel
+setup: npm symlinks babel
 
+clean:
+	rm -rf node_modules
+	find web -type l -delete
 
