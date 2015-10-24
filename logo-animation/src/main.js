@@ -1,4 +1,28 @@
-import {onDocumentReady} from 'DOM/Ready.js'
+function startAnimation(animation) {
+    (function animloop(){
+        window.requestAnimationFrame(animloop);
+        animation();
+    })();
+}
+
+
+function onDocumentReady(func) {
+    let states = ['interactive', 'complete'];
+
+    if (states.indexOf(document.readyState) !== -1) {
+        func.call(this);
+    } else if (document.attachEvent) {
+        document.attachEvent('onreadystatechange', () => {
+            if (states.indexOf(document.readyState) !== -1) {
+                func.call(this);
+            }
+        });
+    } else {
+        document.addEventListener('DOMContentLoaded', (event) => {
+            func.call(this);
+        });
+    }
+}
 
 function createPoint(x, y) {
     return {
@@ -134,10 +158,11 @@ function random(min, max) {
     return min + Math.round(d * r);
 }
 
-function createPixel(point, rgba) {
+function createPixel(point, rgba, imageData) {
     return {
         point,
-        rgba
+        rgba,
+        imageData
     };
 }
 
@@ -148,7 +173,7 @@ function createPixels(canvas, rect) {
         let rgba = getRGBAFromImageData(imageData);
 
         if (false === isWhitePixel(rgba)) {
-            pixels.push(createPixel(point, rgba));
+            pixels.push(createPixel(point, rgba, imageData));
         }
     });
 
@@ -158,9 +183,66 @@ function createPixels(canvas, rect) {
     };
 }
 
+/**
+ * Easing equation function for a sinusoidal (sin(t))
+ * easing in: accelerating from zero velocity.
+ * @param {number} t  Current time (in frames or seconds).
+ * @param {number} b  Starting value.
+ * @param {number} c  Change needed in value.
+ * @param {number} d  Expected easing duration (in frames or seconds).
+ * @return {number} The correct value.
+ */
+function easeInSine(t, b, c, d) {
+    return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
+}
+
+function fallingPixel(pixel, boundingBox) {
+    let finished = false,
+        time = 0,
+        duration = 200;
+
+    return {
+        draw(canvas) {
+            let y;
+
+            time += 1;
+            y = easeInSine(time, pixel.point.y, pixel.point.y + boundingBox.height(), duration);
+
+            canvas.getContext().putImageData(pixel.imageData, pixel.point.x, y);
+
+            if (time === duration) {
+                finished = true;
+            }
+        },
+
+        isFinished() {
+            return finished;
+        }
+    };
+}
+
+function fallingAnimation(pixels, boundingBox, canvas) {
+    let drawables = [],
+        available = [];
+
+    pixels.forEach((pixel) => {
+        available.push(fallingPixel(pixel, boundingBox));
+    });
+
+    return function () {
+        canvas.clear();
+        drawables.forEach((drawable) => {
+            if (false === drawable.isFinished()) {
+                drawable.draw(canvas);
+            }
+        });
+    };
+}
+
 onDocumentReady(() => {
-    let canvas = createCanvas(window.innerWidth, window.innerHeight),
-        ghost = createCanvas(window.innerWidth, window.innerHeight),
+    let boundingBox = createRectangle(createPoint(0, 0), createPoint(window.innerWidth, window.innerHeight)),
+        canvas = createCanvas(boundingBox.width(), boundingBox.height()),
+        ghost = createCanvas(boundingBox.width(), boundingBox.height()),
         image = createImage('img/zicht-z-dark-logo-x2.png');
 
     document.body.appendChild(ghost.getElement());
@@ -180,18 +262,13 @@ onDocumentReady(() => {
 
         pixels = createPixels(ghost, rect);
 
-
+        // draw the pixels individually on the canvas
         forRange(0, pixels.length - 1, (i) => {
-            let pixel = pixels.pixels[i],
-                data = canvas.getContext().getImageData(pixel.point.x, pixel.point.y, 1, 1);
+            let pixel = pixels.pixels[i];
 
-            data.data[0] = pixel.rgba.r;
-            data.data[1] = pixel.rgba.g;
-            data.data[2] = pixel.rgba.b;
-            data.data[3] = pixel.rgba.a;
-
-            canvas.getContext().putImageData(data, pixel.point.x, pixel.point.y);
+            canvas.getContext().putImageData(pixel.imageData, pixel.point.x, pixel.point.y);
         });
-        /**/
+
+        startAnimation(fallingAnimation(pixels.pixels, boundingBox, canvas));
     });
 });
