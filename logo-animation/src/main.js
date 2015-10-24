@@ -1,10 +1,18 @@
-import React from 'react';
-import {Regex} from 'js/model/Regex.js';
-import {App} from 'js/view/App.js';
+import {onDocumentReady} from 'DOM/Ready.js'
+import {Canvas} from 'Element/Canvas.js'
+import {Visual} from 'Asset/Visual.js'
 
-let r = window.r = new Regex();
+onDocumentReady(() => {
+    let canvas = new Canvas(window.innerWidth, window.innerHeight),
+        image = new Visual('img/zicht-z-dark-logo-x2.png');
 
-React.render(
-    <App regex={r} />,
-    document.body
-);
+    document.body.appendChild(canvas.getElement());
+
+    // draw the logo on the canvas
+    Visual.getSize(image.getElement(), (size) => {
+        let x = (canvas.getSize().width - size.width) / 2,
+            y = (canvas.getSize().height - size.height) / 2;
+
+        canvas.getContext().drawImage(image.getElement(), x, y, size.width, size.height);
+    });
+});
