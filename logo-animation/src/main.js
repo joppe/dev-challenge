@@ -18,7 +18,7 @@ function onDocumentReady(func) {
             }
         });
     } else {
-        document.addEventListener('DOMContentLoaded', (event) => {
+        document.addEventListener('DOMContentLoaded', () => {
             func.call(this);
         });
     }
@@ -183,36 +183,38 @@ function createPixels(canvas, rect) {
     };
 }
 
-/**
- * Easing equation function for a sinusoidal (sin(t))
- * easing in: accelerating from zero velocity.
- * @param {number} t  Current time (in frames or seconds).
- * @param {number} b  Starting value.
- * @param {number} c  Change needed in value.
- * @param {number} d  Expected easing duration (in frames or seconds).
- * @return {number} The correct value.
- */
 function easeInSine(t, b, c, d) {
     return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
 }
 
 function fallingPixel(pixel, boundingBox) {
     let finished = false,
+        animating = false,
         time = 0,
         duration = 200;
 
     return {
+        start() {
+            animating = true;
+        },
+
         draw(canvas) {
             let y;
 
-            time += 1;
-            y = easeInSine(time, pixel.point.y, pixel.point.y + boundingBox.height(), duration);
+            if (false === animating) {
+                y = pixel.point.y;
+            } else {
+                time += 1;
+
+                if (time === duration || y > boundingBox.bottomright.y) {
+                    finished = true;
+                }
+
+                y = easeInSine(time, pixel.point.y, pixel.point.y + boundingBox.height(), duration)
+
+            }
 
             canvas.getContext().putImageData(pixel.imageData, pixel.point.x, y);
-
-            if (time === duration) {
-                finished = true;
-            }
         },
 
         isFinished() {
@@ -222,19 +224,52 @@ function fallingPixel(pixel, boundingBox) {
 }
 
 function fallingAnimation(pixels, boundingBox, canvas) {
-    let drawables = [],
-        available = [];
+    let animatedPixels = [],
+        availablePixels = [],
+        minAmountAnimating = 20,
+        maxAmountAnimating = 60;
 
     pixels.forEach((pixel) => {
-        available.push(fallingPixel(pixel, boundingBox));
+        availablePixels.push(fallingPixel(pixel, boundingBox));
     });
 
+    function populateAnimating() {
+        if (0 < availablePixels.length) {
+            let amount = random(minAmountAnimating, maxAmountAnimating);
+
+            forRange(0, Math.min(amount, availablePixels.length - 1), () => {
+                let index = random(0, availablePixels.length - 1),
+                    drawable = availablePixels[index];
+
+                drawable.start();
+
+                animatedPixels.push(drawable);
+                availablePixels.splice(index, 1);
+            });
+        }
+    }
+
     return function () {
+        let remove = [];
+
+        populateAnimating();
+
         canvas.clear();
-        drawables.forEach((drawable) => {
+
+        animatedPixels.forEach((drawable) => {
             if (false === drawable.isFinished()) {
                 drawable.draw(canvas);
+            } else {
+                remove.push(drawable);
             }
+        });
+
+        availablePixels.forEach((drawable) => {
+            drawable.draw(canvas);
+        });
+
+        remove.forEach((drawable) => {
+            animatedPixels.splice(animatedPixels.indexOf(drawable), 1);
         });
     };
 }
@@ -269,6 +304,8 @@ onDocumentReady(() => {
             canvas.getContext().putImageData(pixel.imageData, pixel.point.x, pixel.point.y);
         });
 
-        startAnimation(fallingAnimation(pixels.pixels, boundingBox, canvas));
+        window.setTimeout(() => {
+            startAnimation(fallingAnimation(pixels.pixels, boundingBox, canvas));
+        }, 2000);
     });
 });
