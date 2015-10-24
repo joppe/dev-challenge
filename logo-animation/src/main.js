@@ -187,6 +187,10 @@ function easeInSine(t, b, c, d) {
     return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
 }
 
+function easeOutSine(t, b, c, d) {
+    return c * Math.sin(t / d * (Math.PI / 2)) + b;
+}
+
 function fallingPixel(pixel, boundingBox) {
     let finished = false,
         animating = false,
@@ -223,15 +227,62 @@ function fallingPixel(pixel, boundingBox) {
     };
 }
 
-function fallingAnimation(pixels, boundingBox, canvas) {
+function pointOutsideBox(rectangle, offset, range) {
+    let left = random(1, 10) <= 5,
+        top = random(1, 10) <= 5,
+        x,
+        y;
+
+    if (left) {
+        let max = rectangle.topleft.x - offset;
+
+        x = random(max - range, max)
+    } else {
+        let min = rectangle.bottomright.x + offset;
+
+        x = random(min, min + range);
+    }
+
+    if (top) {
+        let max = rectangle.topleft.y - offset;
+
+        y = random(max - range, max)
+    } else {
+        let min = rectangle.bottomright.y + offset;
+
+        y = random(min, min + range);
+    }
+
+    return createPoint(x, y);
+}
+
+function zoomingPixel(pixel, image, boundingBox) {
+    let finished = false,
+        animating = false,
+        time = 0,
+        duration = random(150, 300),
+        radius = random(200, 400),
+        startPoint = pointOutsideBox(boundingBox, radius, 300);
+
+    return {
+        start() {
+            animating = true;
+        },
+
+        draw(canvas) {
+            //canvas.getContext().drawImage(image.getElement(), rect.topleft.x, rect.topleft.y, rect.width(), rect.height());
+        },
+
+        isFinished() {
+            return finished;
+        }
+    };
+}
+
+function createAnimation(availablePixels, canvas) {
     let animatedPixels = [],
-        availablePixels = [],
         minAmountAnimating = 20,
         maxAmountAnimating = 60;
-
-    pixels.forEach((pixel) => {
-        availablePixels.push(fallingPixel(pixel, boundingBox));
-    });
 
     function populateAnimating() {
         if (0 < availablePixels.length) {
@@ -304,8 +355,15 @@ onDocumentReady(() => {
             canvas.getContext().putImageData(pixel.imageData, pixel.point.x, pixel.point.y);
         });
 
+        pointOutsideBox(boundingBox, 100, 500);
         window.setTimeout(() => {
-            startAnimation(fallingAnimation(pixels.pixels, boundingBox, canvas));
+            let fallingPixels = [];
+
+            pixels.pixels.forEach((pixel) => {
+                fallingPixels.push(fallingPixel(pixel, boundingBox));
+            });
+
+            startAnimation(createAnimation(fallingPixels, canvas));
         }, 2000);
     });
 });
