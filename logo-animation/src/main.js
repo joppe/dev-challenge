@@ -1,7 +1,11 @@
 function startAnimation(animation) {
-    (function animloop(){
-        window.requestAnimationFrame(animloop);
-        animation();
+    let active = true;
+
+    (function animloop() {
+        if (true === active) {
+            window.requestAnimationFrame(animloop);
+        }
+        active = animation();
     })();
 }
 
@@ -187,9 +191,15 @@ function easeInSine(t, b, c, d) {
     return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
 }
 
-function easeOutSine(t, b, c, d) {
-    return c * Math.sin(t / d * (Math.PI / 2)) + b;
+// quart
+function easeOut(t, b, c, d) {
+    return -c * ((t = t/d - 1) * t * t * t - 1) + b;
 }
+/**/
+/*/ sine
+function easeOut(t, b, c, d) {
+    return c * Math.sin(t / d * (Math.PI / 2)) + b;
+}/**/
 
 function fallingPixel(pixel, boundingBox) {
     let finished = false,
@@ -227,42 +237,111 @@ function fallingPixel(pixel, boundingBox) {
     };
 }
 
-function pointOutsideBox(rectangle, offset, range) {
-    let left = random(1, 10) <= 5,
-        top = random(1, 10) <= 5,
-        x,
-        y;
+function getSector(pixel, rectangle) {
+     let dw = rectangle.width() / 3,
+         dy = rectangle.height() / 3,
+         sector = 0;
 
-    if (left) {
-        let max = rectangle.topleft.x - offset;
-
-        x = random(max - range, max)
+    if (pixel.point.x < rectangle.topleft.x + dw) {
+        sector = 1;
+    } else if (pixel.point.x < rectangle.topleft.x + (2 * dw)) {
+        sector = 2;
     } else {
-        let min = rectangle.bottomright.x + offset;
-
-        x = random(min, min + range);
+        sector = 3;
     }
 
-    if (top) {
-        let max = rectangle.topleft.y - offset;
-
-        y = random(max - range, max)
+    if (pixel.point.y < rectangle.topleft.y + dy) {
+    } else if (pixel.point.y < rectangle.topleft.y + (2 * dy)) {
+        sector += 3;
     } else {
-        let min = rectangle.bottomright.y + offset;
-
-        y = random(min, min + range);
+        sector += 6;
     }
 
-    return createPoint(x, y);
+    return sector;
 }
 
-function zoomingPixel(pixel, image, boundingBox) {
+function pointOutsideBox(sector, rectangle, offset, range) {
+    let point;
+
+    function left() {
+        let maxX = rectangle.topleft.x - offset;
+
+        return random(maxX - range, maxX);
+    }
+
+    function center() {
+        return random(rectangle.topleft.x, rectangle.bottomright.x);
+    }
+
+    function right() {
+        let minX = rectangle.bottomright.x + offset;
+
+        return random(minX, minX + range);
+    }
+
+    function top() {
+        let maxY = rectangle.topleft.y - offset;
+
+        return random(maxY - range, maxY);
+    }
+
+    function middle() {
+        return random(rectangle.topleft.y, rectangle.bottomright.y);
+    }
+
+    function bottom() {
+        let minY = rectangle.bottomright.y + offset;
+
+        return random(minY, minY + range);
+    }
+
+    switch (sector) {
+        case 1: // left - top
+            point = createPoint(left(), top());
+            break;
+        case 2: // center - top
+            point = createPoint(center(), top());
+            break;
+        case 3: // right - top
+            point = createPoint(right(), top());
+            break;
+        case 4: // left - middle
+            point = createPoint(left(), middle());
+            break;
+        case 5: // center - middle
+            point = createPoint(top(), middle());
+            break;
+        case 6: // right - middle
+            point = createPoint(right(), middle());
+            break;
+        case 7: // left - bottom
+            point = createPoint(left(), bottom());
+            break;
+        case 8: // center - bottom
+            point = createPoint(center(), bottom());
+            break;
+        case 9: // right - bottom
+            point = createPoint(right(), bottom());
+            break;
+    }
+
+    return point;
+}
+
+function zoomingPixel(pixel, image, imageRect, boundingBox) {
     let finished = false,
         animating = false,
         time = 0,
-        duration = random(150, 300),
-        radius = random(200, 400),
-        startPoint = pointOutsideBox(boundingBox, radius, 300);
+        duration = random(50, 120),
+        radius = random(boundingBox.width(), 1.5 * boundingBox.width()),
+        endPoint = pixel.point,
+        startPoint = pointOutsideBox(getSector(pixel, imageRect), boundingBox, radius, 300),
+        width = radius,
+        height = radius,
+        x = startPoint.x,
+        y = startPoint.y,
+        dx = endPoint.x - startPoint.x,
+        dy = endPoint.y - startPoint.y;
 
     return {
         start() {
@@ -270,19 +349,41 @@ function zoomingPixel(pixel, image, boundingBox) {
         },
 
         draw(canvas) {
-            //canvas.getContext().drawImage(image.getElement(), rect.topleft.x, rect.topleft.y, rect.width(), rect.height());
+            if (true === animating) {
+                let percentage = easeOut(time, 0, 100, duration) / 100;
+
+                time += 1;
+
+                x = startPoint.x + (percentage * dx);
+                y = startPoint.y + (percentage * dy);
+                height = width = radius - (percentage * (radius - 1));
+
+                if (time === duration) {
+                    x = endPoint.x;
+                    y = endPoint.y;
+                    width = 1;
+                    height = 1;
+                    animating = false;
+                    finished = true;
+                }
+            }
+
+            if (width < 5) {
+                canvas.getContext().fillStyle = 'rgba(' + pixel.rgba.r + ',' + pixel.rgba.g + ',' + pixel.rgba.b + ',' + pixel.rgba.a + ')';
+                canvas.getContext().fillRect(x, y, width, height);
+            } else {
+                canvas.getContext().drawImage(image.getElement(), x, y, width, height);
+            }
         },
 
         isFinished() {
-            return finished;
+            return finished || width < 30;
         }
     };
 }
 
-function createAnimation(availablePixels, canvas) {
-    let animatedPixels = [],
-        minAmountAnimating = 20,
-        maxAmountAnimating = 60;
+function createAnimation(availablePixels, canvas, minAmountAnimating, maxAmountAnimating, onFinished) {
+    let animatedPixels = [];
 
     function populateAnimating() {
         if (0 < availablePixels.length) {
@@ -322,14 +423,79 @@ function createAnimation(availablePixels, canvas) {
         remove.forEach((drawable) => {
             animatedPixels.splice(animatedPixels.indexOf(drawable), 1);
         });
+        console.log(animatedPixels.length);
+        if (animatedPixels.length === 0) {
+            onFinished();
+            return false;
+        }
+
+        return true;
+    };
+}
+
+function createAnimation2(availablePixels, canvas, minAmountAnimating, maxAmountAnimating, onFinished) {
+    let animatedPixels = [],
+        finishedPixels = [];
+
+    function populateAnimating() {
+        let amount = random(minAmountAnimating, maxAmountAnimating);
+
+        if (animatedPixels.length < amount && 0 < availablePixels.length) {
+            forRange(0, Math.min(amount, availablePixels.length - 1), () => {
+                let index = random(0, availablePixels.length - 1),
+                    drawable = availablePixels[index];
+
+                drawable.start();
+
+                animatedPixels.push(drawable);
+                availablePixels.splice(index, 1);
+            });
+        }
+    }
+
+    return function () {
+        let remove = [];
+
+        populateAnimating();
+
+        canvas.clear();
+
+        animatedPixels.forEach((drawable) => {
+            if (false === drawable.isFinished()) {
+                drawable.draw(canvas);
+            } else {
+                remove.push(drawable);
+            }
+        });
+
+        finishedPixels.forEach((drawable) => {
+            drawable.draw(canvas);
+        });
+
+        remove.forEach((drawable) => {
+            animatedPixels.splice(animatedPixels.indexOf(drawable), 1);
+            finishedPixels.push(drawable);
+        });
+
+        if (animatedPixels.length === 0) {
+            onFinished();
+            return false;
+        }
+
+        return true;
     };
 }
 
 onDocumentReady(() => {
-    let boundingBox = createRectangle(createPoint(0, 0), createPoint(window.innerWidth, window.innerHeight)),
-        canvas = createCanvas(boundingBox.width(), boundingBox.height()),
-        ghost = createCanvas(boundingBox.width(), boundingBox.height()),
-        image = createImage('img/zicht-z-dark-logo-x2.png');
+    let boundingBox,
+        canvas,
+        ghost,
+        image;
+
+    boundingBox = createRectangle(createPoint(0, 0), createPoint(window.innerWidth, window.innerHeight));
+    canvas = createCanvas(boundingBox.width(), boundingBox.height());
+    ghost = createCanvas(boundingBox.width(), boundingBox.height());
+    image = createImage('img/zicht-z-dark-logo-x2.png');
 
     document.body.appendChild(ghost.getElement());
     ghost.getElement().style.position = 'absolute';
@@ -342,28 +508,49 @@ onDocumentReady(() => {
         let x = (ghost.getSize().width - size.width) / 2,
             y = (ghost.getSize().height - size.height) / 2,
             rect = createRectangle(createPoint(x, y), createPoint(x + size.width, y + size.height)),
-            pixels;
+            pixels,
+            fall,
+            zoom;
 
         ghost.getContext().drawImage(image.getElement(), rect.topleft.x, rect.topleft.y, rect.width(), rect.height());
 
         pixels = createPixels(ghost, rect);
 
-        // draw the pixels individually on the canvas
+        /*/ draw the pixels individually on the canvas
         forRange(0, pixels.length - 1, (i) => {
             let pixel = pixels.pixels[i];
 
             canvas.getContext().putImageData(pixel.imageData, pixel.point.x, pixel.point.y);
         });
+        /**/
 
-        pointOutsideBox(boundingBox, 100, 500);
-        window.setTimeout(() => {
+        // falling pixels
+        fall = function () {
             let fallingPixels = [];
 
             pixels.pixels.forEach((pixel) => {
                 fallingPixels.push(fallingPixel(pixel, boundingBox));
             });
 
-            startAnimation(createAnimation(fallingPixels, canvas));
-        }, 2000);
+            window.setTimeout(() => {
+
+                startAnimation(createAnimation(fallingPixels, canvas, 20, 60, zoom));
+            }, 2000);
+        };
+
+        // zooming pixels
+        zoom = function () {
+            let zoomingPixels = [];
+
+            pixels.pixels.forEach((pixel) => {
+                zoomingPixels.push(zoomingPixel(pixel, image, rect, boundingBox));
+            });
+
+            window.setTimeout(() => {
+                startAnimation(createAnimation2(zoomingPixels, canvas, 3, 12, fall));
+            }, 1000);
+        };
+
+        zoom();
     });
 });
