@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logo animation</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+        function startAnimation(animation) {
+            var active = true;
+
+            (function animloop() {
+                if (true === active) {
+                    window.requestAnimationFrame(animloop);
+                }
+                active = animation();
+            })();
+        }
+
+        function createCanvas(width, height) {
+            var el = document.createElement('canvas'),
+                    ctx;
+
+            el.setAttribute('width', width);
+            el.setAttribute('height', height);
+
+            ctx = el.getContext('2d');
+
+            return {
+                clear: function () {
+                    ctx.clearRect(0, 0, width, height);
+                },
+
+                getSize: function () {
+                    return {
+                        width: width,
+                        height: height
+                    };
+                },
+
+                getContext: function () {
+                    return ctx;
+                },
+
+                getElement: function () {
+                    return el;
+                }
+            };
+        }
+
+        function createImage(path) {
+            var image = new Image(),
+                    size;
+
+            image.setAttribute('src', path);
+
+            return {
+                getElement: function () {
+                    return image;
+                },
+
+                preload: function (onLoad, onError) {
+                    var preload = new Image();
+
+                    preload.addEventListener('load', function () {
+                        onLoad.call(this, preload);
+                    });
+                    preload.addEventListener('error`', function () {
+                        onError.call(this, preload);
+                    });
+                    preload.setAttribute('src', image.getAttribute('src'));
+                },
+
+                getSize: function (onReady) {
+                    if (undefined === size) {
+                        this.preload(function () {
+                            image.style.visibility = 'hidden';
+                            image.style.position = 'absolute';
+
+                            document.body.appendChild(image);
+
+                            size = {
+                                width: image.offsetWidth,
+                                height: image.offsetHeight
+                            };
+
+                            onReady.call(this, size);
+                        }, function () {
+                            throw 'Image could not be loaded';
+                        });
+                    } else {
+                        onReady.call(this, size);
+                    }
+                }
+            };
+        }
+
+        function toRadians(angle) {
+            return (Math.PI / 180) * angle;
+        }
+
+        var canvas = createCanvas(400, 400),
+                image = createImage('img/zicht-z-dark-logo-x2.png');
+
+        document.body.appendChild(canvas.getElement());
+
+        image.getSize(function (size) {
+            var counter = 0,
+                top = size.height / 2,
+                left = size.width / 2;
+
+            startAnimation(function () {
+                canvas.getContext().save();
+                canvas.clear();
+                canvas.getContext().translate(canvas.getSize().width / 2, canvas.getSize().height / 2);
+                canvas.getContext().rotate(toRadians(counter));
+                canvas.getContext().drawImage(image.getElement(), -left, -top);
+                canvas.getContext().restore();
+
+                counter += 1;
+
+                return true;
+            });
+        });
+    </script>
+</body>
+</html>
