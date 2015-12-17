@@ -7,3 +7,6 @@ logo-animation/node_modules
 logo-animation/web/vendor
 logo-animation/web/js/**/*.js
 !logo-animation/web/js/system.conf.js
+snake/node_modules
+snake/js/*.js
+!snake/js/system.conf.js
