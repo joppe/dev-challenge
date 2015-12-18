@@ -9,8 +9,8 @@ import {random} from './helper.js';
 import {square} from './helper.js';
 
 const SPEED = 1;
-const BASE_TIME = 200;
-const INCREASE = 0.05;
+const BASE_TIME = 300;
+const INCREASE = 0.005;
 
 export class Game {
     /**
@@ -59,8 +59,8 @@ export class Game {
      * @returns {Vector}
      */
     randomPosition(other = null) {
-        let x = random(0, this.vector.x),
-            y = random(0, this.vector.y),
+        let x = random(1, this.vector.x - 1),
+            y = random(1, this.vector.y - 1),
             v = new Vector(x, y);
 
         v = v.multiply(this.unitVector);
@@ -118,7 +118,7 @@ export class Game {
             if (false === this.dead) {
                 if (this.canEat()) {
                     this.speed = square(this.speed + INCREASE);
-                    this.status.update(`speed: ${this.speed}`);
+                    this.status.update(`speed: ${this.speed}; ${INCREASE}`);
                     this.snake.grow(3);
                     this.placeCandy();
                     this.score.add(3 * this.snake.length());
