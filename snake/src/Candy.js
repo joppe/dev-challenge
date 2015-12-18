@@ -3,7 +3,7 @@ import {Drawable} from './Drawable.js';
 export class Candy extends Drawable {
     /**
      * @param {Vector} position
-     * @param {Number} size
+     * @param {number} size
      */
     constructor(position, size) {
         super(position, size);

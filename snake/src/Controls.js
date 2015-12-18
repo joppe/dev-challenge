@@ -20,14 +20,14 @@ export class Controls {
 
     /**
      * @param {string} key
-     * @returns {Number}
+     * @returns {number}
      */
     findCode(key) {
         return this.map[key];
     }
 
     /**
-     * @param {Number} keycode
+     * @param {number} keycode
      * @param {Function} callback
      */
     addListener(keycode, callback) {
@@ -42,11 +42,14 @@ export class Controls {
      * @param {Event} event
      */
     handleKey(event) {
-        console.log(event.keyCode);
         if (undefined !== this.listeners[event.keyCode]) {
             this.listeners[event.keyCode].forEach((callback) => {
                 callback.call(this, event);
             });
         }
+    }
+
+    reset() {
+        this.listeners = {};
     }
 }

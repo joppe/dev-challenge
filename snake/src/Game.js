@@ -6,18 +6,31 @@ import {Score} from './Score.js';
 import {Status} from './Status.js';
 import {directions} from './helper.js';
 import {random} from './helper.js';
+import {square} from './helper.js';
+
+const SPEED = 1;
+const BASE_TIME = 200;
+const INCREASE = 0.05;
 
 export class Game {
     /**
      * @param {Vector} vector
-     * @param {Number} size
+     * @param {number} size
      */
     constructor(vector, size) {
         this.vector = vector;
         this.size = size;
-        this.speed = 1;
+        this.snake = new Snake(this.size);
+        this.candy = new Candy(this.size);
         this.score = new Score();
         this.status = new Status();
+        this.controls = new Controls();
+
+        this.unitVector = new Vector(this.size, this.size);
+        this.up = directions.up.multiply(this.unitVector);
+        this.right = directions.right.multiply(this.unitVector);
+        this.down = directions.down.multiply(this.unitVector);
+        this.left = directions.left.multiply(this.unitVector);
 
         this.element = document.createElement('div');
         this.element.setAttribute('class', 'game');
@@ -30,6 +43,12 @@ export class Game {
      */
     draw(container) {
         container.appendChild(this.element);
+
+        this.snake.hide();
+        this.snake.draw(this.element);
+
+        this.candy.hide();
+        this.candy.draw(this.element);
 
         this.score.draw(container);
         this.status.draw(container);
@@ -44,7 +63,7 @@ export class Game {
             y = random(0, this.vector.y),
             v = new Vector(x, y);
 
-        v = v.multiply(new Vector(this.size, this.size));
+        v = v.multiply(this.unitVector);
 
         if (null !== other && v.isSame(other)) {
             v = this.randomPosition(other);
@@ -98,10 +117,11 @@ export class Game {
 
             if (false === this.dead) {
                 if (this.canEat()) {
+                    this.speed = square(this.speed + INCREASE);
+                    this.status.update(`speed: ${this.speed}`);
                     this.snake.grow(3);
                     this.placeCandy();
-
-                    this.score.add(5);
+                    this.score.add(3 * this.snake.length());
                 }
 
                 if (false === this.pause) {
@@ -110,64 +130,64 @@ export class Game {
             } else {
                 this.status.update('Game over');
             }
-        }, 200);
+        }, BASE_TIME / this.speed);
     }
 
     placeCandy() {
-        let snakePosition = this.randomPosition(),
+        let snakePosition = this.snake.getPosition(),
             candyPosition = this.randomPosition(snakePosition);
 
-        this.candy.move(candyPosition);
+        this.candy.setPosition(candyPosition);
+        this.candy.show();
+    }
+
+    placeSnake() {
+        let snakePosition = this.randomPosition(),
+            direction = snakePosition.x > ((this.size * this.vector.x) / 2) ? this.left : this.right;
+
+        this.snake.setPosition(snakePosition);
+        this.snake.setDirection(direction);
+        this.snake.reset();
+        this.snake.grow(1);
+        this.snake.show();
     }
 
     start() {
-        let snakePosition = this.randomPosition(),
-            candyPosition = this.randomPosition(snakePosition),
-            unitVector = new Vector(this.size, this.size),
-            up = directions.up.multiply(unitVector),
-            right = directions.right.multiply(unitVector),
-            down = directions.down.multiply(unitVector),
-            left = directions.left.multiply(unitVector),
-            direction = snakePosition.x > ((this.size * this.vector.x) / 2) ? left : right,
-            controls = new Controls();
-
         this.dead = false;
         this.pause = false;
-        this.snake = new Snake(snakePosition, this.size, direction);
-        this.snake.draw(this.element);
-        this.snake.grow(0);
+        this.speed = SPEED;
 
-        this.candy = new Candy(candyPosition, this.size);
-        this.candy.draw(this.element);
+        this.placeSnake();
+        this.placeCandy();
 
         this.score.reset();
-        this.status.update('start');
+        this.status.update(`speed: ${this.speed}`);
 
-        controls.addListener(controls.findCode('up'), () => {
-            this.dead = !this.snake.move(up);
+        this.controls.reset();
+
+        this.controls.addListener(this.controls.findCode('up'), () => {
+            this.dead = !this.snake.move(this.up);
         });
 
-        controls.addListener(controls.findCode('down'), () => {
-            this.dead = !this.snake.move(down);
+        this.controls.addListener(this.controls.findCode('down'), () => {
+            this.dead = !this.snake.move(this.down);
         });
 
-        controls.addListener(controls.findCode('left'), () => {
-            this.dead = !this.snake.move(left);
+        this.controls.addListener(this.controls.findCode('left'), () => {
+            this.dead = !this.snake.move(this.left);
         });
 
-        controls.addListener(controls.findCode('right'), () => {
-            this.dead = !this.snake.move(right);
+        this.controls.addListener(this.controls.findCode('right'), () => {
+            this.dead = !this.snake.move(this.right);
         });
 
-        controls.addListener(controls.findCode('r'), () => {
-            console.log('restart?');
+        this.controls.addListener(this.controls.findCode('r'), () => {
             if (this.dead) {
-                console.log('restart?');
                 this.start();
             }
         });
 
-        controls.addListener(controls.findCode('space'), () => {
+        this.controls.addListener(this.controls.findCode('space'), () => {
             if (false === this.dead) {
                 this.pause = !this.pause;
                 this.status.update(this.pause ? 'pause' : 'playing');

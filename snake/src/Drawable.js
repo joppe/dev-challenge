@@ -1,17 +1,13 @@
 export class Drawable {
     /**
-     * @param {Vector} position
-     * @param {Number} size
+     * @param {number} size
      */
-    constructor(position, size) {
-        this.position = position;
+    constructor(size) {
         this.size = size;
 
         this.element = document.createElement('div');
         this.element.style.width = this.size + 'px';
         this.element.style.height = this.size + 'px';
-
-        this.positionElement();
     }
 
     getPosition() {
@@ -20,16 +16,15 @@ export class Drawable {
 
     /**
      * @param {Vector} position
+     * @return {Drawable}
      */
-    move(position) {
+    setPosition(position) {
         this.position = position;
 
-        this.positionElement();
-    }
-
-    positionElement() {
         this.element.style.left = this.position.x + 'px';
         this.element.style.top = this.position.y + 'px';
+
+        return this;
     }
 
     /**
@@ -39,4 +34,15 @@ export class Drawable {
         container.appendChild(this.element);
     }
 
+    remove() {
+        this.element.parentElement.removeChild(this.element);
+    }
+
+    hide() {
+        this.element.style.visibility = 'hidden';
+    }
+
+    show() {
+        this.element.style.visibility = 'visible';
+    }
 }

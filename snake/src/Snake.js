@@ -3,28 +3,45 @@ import {Drawable} from './Drawable.js';
 
 class Segment extends Drawable {
     /**
-     * @param {Vector} position
-     * @param {Number} size
+     * @param {number} size
      */
-    constructor(position, size) {
-        super(position, size);
+    constructor(size) {
+        super(size);
 
         this.element.setAttribute('class', 'segment');
     }
 }
 
-export class Snake {
+export class Snake extends Drawable {
+    /**
+     * @param {number} size
+     */
+    constructor(size) {
+        super(size);
+
+        this.element.setAttribute('class', 'snake');
+
+        this.segments = [];
+    }
+
     /**
      * @param {Vector} position
-     * @param {Number} size
-     * @param {Vector} direction
+     * @return {Drawable}
      */
-    constructor(position, size, direction) {
+    setPosition(position) {
         this.position = position;
-        this.size = size;
+
+        return this;
+    }
+
+    /**
+     * @param {Vector} direction
+     * @returns {Snake}
+     */
+    setDirection(direction) {
         this.direction = direction;
 
-        this.segments = [new Segment(this.position, this.size)];
+        return this;
     }
 
     /**
@@ -41,52 +58,43 @@ export class Snake {
         return true;
     }
 
-    /**
-     * @param {HTMLElement} container
-     */
-    draw(container) {
-        let position = this.position;
-
-        this.container = container;
-
+    reset() {
         this.segments.forEach((segment) => {
-            segment.move(position);
-            segment.draw(this.container);
+            segment.remove();
+        });
 
-            position = segment.getPosition();
-        })
+        this.segments = [];
     }
 
     update() {
-        let position = this.direction.add(this.getPosition());
+        let position = this.direction.add(this.position);
+
+        this.position = position;
 
         this.segments.forEach((segment) => {
             let newPosition = segment.getPosition();
 
-            segment.move(position);
-            position = newPosition;
-        })
-    }
+            segment.setPosition(position);
 
-    /**
-     * @returns {Vector}
-     */
-    getPosition() {
-        return this.segments[0].getPosition();
+            if (undefined !== newPosition) {
+                position = newPosition;
+            }
+        })
     }
 
     /**
      * The new segments are placed on top of the last segment.
      * This way the growth will be visible when the snake moves away.
      *
-     * @param {Number} count
+     * @param {number} count
      */
     grow(count) {
-        let position = this.segments[this.segments.length - 1].getPosition();
-
         for (let i = 0; i < count; i += 1) {
-            let segment = new Segment(position, this.size);
-            segment.draw(this.container);
+            let segment = new Segment(this.size);
+
+            segment.setPosition(this.position);
+            segment.draw(this.element);
+
             this.segments.push(segment);
         }
     }
@@ -107,9 +115,9 @@ export class Snake {
     }
 
     /**
-     * @returns {Number}
+     * @returns {number}
      */
-    getSegmentCount() {
+    length() {
         return this.segments.length;
     }
 }

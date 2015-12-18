@@ -22,7 +22,7 @@ export class Score {
     }
 
     /**
-     * @param {string} score
+     * @param {number} score
      */
     add(score) {
         this.score += score;
@@ -32,5 +32,12 @@ export class Score {
 
     render() {
         this.element.innerText = `Score: ${this.score}`;
+    }
+
+    /**
+     * @returns {number}
+     */
+    getScore() {
+        return this.score;
     }
 }
