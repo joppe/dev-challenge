@@ -19,10 +19,10 @@ export class Drawable {
     }
 
     /**
-     * @param {Vector} vector
+     * @param {Vector} position
      */
-    move(vector) {
-        this.position = this.position.add(vector);
+    move(position) {
+        this.position = position;
 
         this.positionElement();
     }

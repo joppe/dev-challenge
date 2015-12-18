@@ -41,20 +41,24 @@ export class Snake {
     draw(container) {
         let position = this.direction;
 
+        this.container = container;
+
         this.segments.forEach((segment) => {
             segment.move(position);
-            segment.draw(container);
+            segment.draw(this.container);
 
             position = segment.getPosition();
         })
     }
 
     update() {
-        let position = this.direction;
+        let position = this.direction.add(this.getPosition());
 
         this.segments.forEach((segment) => {
+            let newPosition = segment.getPosition();
+
             segment.move(position);
-            position = segment.getPosition();
+            position = newPosition;
         })
     }
 
@@ -75,7 +79,9 @@ export class Snake {
         let position = this.segments[this.segments.length - 1].getPosition();
 
         for (let i = 0; i < count; i += 1) {
-            this.segments.push(new Segment(position, this.size));
+            let segment = new Segment(position, this.size);
+            segment.draw(this.container);
+            this.segments.push(segment);
         }
     }
 
@@ -87,5 +93,12 @@ export class Snake {
         return this.segments.some((segment) => {
             return position.isSame(segment.getPosition());
         });
+    }
+
+    /**
+     * @returns {Number}
+     */
+    getSegmentCount() {
+        return this.segments.length;
     }
 }

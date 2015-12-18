@@ -13,6 +13,14 @@ export class Vector {
     }
 
     /**
+     * @param {Vector} vector
+     * @returns {Vector}
+     */
+    multiply(vector) {
+        return new Vector(this.x * vector.x, this.y * vector.y);
+    }
+
+    /**
      * @returns {Vector}
      */
     clone() {

@@ -13,8 +13,8 @@ export function random(min, max) {
  * @type {{up: Vector, right: Vector, down: Vector, left: Vector}}
  */
 export var directions = {
-    up: new Vector(0, 1),
+    up: new Vector(0, -1),
     right: new Vector(1, 0),
-    down: new Vector(0, -1),
+    down: new Vector(0, 1),
     left: new Vector(-1, 0)
 };

@@ -14,7 +14,7 @@ import {Vector} from './Vector.js';
  * The game object has a collision detection function.
  */
 (function () {
-    var game = new Game(new Vector(100, 100), 5);
+    var game = new Game(new Vector(30, 30), 10);
 
     game.draw(document.body);
     game.start();
