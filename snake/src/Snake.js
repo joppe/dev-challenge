@@ -27,19 +27,25 @@ export class Snake {
         this.segments = [new Segment(this.position, this.size)];
     }
 
+    /**
+     * @param {Vector} direction
+     * @returns {boolean}
+     */
     move(direction) {
-        if (2 === Math.abs(direction.x - this.direction.x) || 2 === Math.abs(direction.y - this.direction.y)) {
-            throw new InvalidDirectionException('Cannot move in opposite direction');
+        if ((2 * this.size) === Math.abs(direction.x - this.direction.x) || (2 * this.size) === Math.abs(direction.y - this.direction.y)) {
+            return false;
         }
 
         this.direction = direction;
+
+        return true;
     }
 
     /**
      * @param {HTMLElement} container
      */
     draw(container) {
-        let position = this.direction;
+        let position = this.position;
 
         this.container = container;
 
@@ -87,10 +93,15 @@ export class Snake {
 
     /**
      * @param {Vector} position
+     * @param {array} exclude
      * @returns {boolean}
      */
-    contains(position) {
-        return this.segments.some((segment) => {
+    contains(position, exclude = []) {
+        return this.segments.some((segment, index) => {
+            if (-1 !== exclude.indexOf(index)) {
+                return false;
+            }
+
             return position.isSame(segment.getPosition());
         });
     }

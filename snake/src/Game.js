@@ -2,6 +2,8 @@ import {Vector} from './Vector.js';
 import {Snake} from './Snake.js';
 import {Controls} from './Controls.js';
 import {Candy} from './Candy.js';
+import {Score} from './Score.js';
+import {Status} from './Status.js';
 import {directions} from './helper.js';
 import {random} from './helper.js';
 
@@ -14,7 +16,8 @@ export class Game {
         this.vector = vector;
         this.size = size;
         this.speed = 1;
-        this.score = 0;
+        this.score = new Score();
+        this.status = new Status();
 
         this.element = document.createElement('div');
         this.element.setAttribute('class', 'game');
@@ -27,6 +30,9 @@ export class Game {
      */
     draw(container) {
         container.appendChild(this.element);
+
+        this.score.draw(container);
+        this.status.draw(container);
     }
 
     /**
@@ -54,9 +60,9 @@ export class Game {
         let hit = false;
 
         if (
-            0 > this.snake.getPosition().x ||
+            this.size > this.snake.getPosition().x ||
             (this.size * this.vector.x) < this.snake.getPosition().x ||
-            0 > this.snake.getPosition().y ||
+            this.size > this.snake.getPosition().y ||
             (this.size * this.vector.y) < this.snake.getPosition().y
         ) {
             hit = true;
@@ -82,17 +88,29 @@ export class Game {
         window.setTimeout(() => {
             this.snake.update();
 
+            if (this.snake.contains(this.snake.getPosition(), [0])) {
+                this.dead = true;
+            }
+
             if (this.hitDetection()) {
-                throw 'Out of area';
+                this.dead = true;
             }
 
-            if (this.canEat()) {
-                this.snake.grow(3);
-                this.placeCandy();
-            }
+            if (false === this.dead) {
+                if (this.canEat()) {
+                    this.snake.grow(3);
+                    this.placeCandy();
 
-            this.cycle();
-        }, 300);
+                    this.score.add(5);
+                }
+
+                if (false === this.pause) {
+                    this.cycle();
+                }
+            } else {
+                this.status.update('Game over');
+            }
+        }, 200);
     }
 
     placeCandy() {
@@ -111,34 +129,54 @@ export class Game {
             down = directions.down.multiply(unitVector),
             left = directions.left.multiply(unitVector),
             direction = snakePosition.x > ((this.size * this.vector.x) / 2) ? left : right,
-            controls = new Controls(this.element);
+            controls = new Controls();
 
+        this.dead = false;
+        this.pause = false;
         this.snake = new Snake(snakePosition, this.size, direction);
         this.snake.draw(this.element);
-        this.snake.grow(3);
+        this.snake.grow(0);
 
         this.candy = new Candy(candyPosition, this.size);
         this.candy.draw(this.element);
 
-        try {
-            controls.addListener(controls.findCode('up'), () => {
-                this.snake.move(up);
-            });
+        this.score.reset();
+        this.status.update('start');
 
-            controls.addListener(controls.findCode('down'), () => {
-                this.snake.move(down);
-            });
+        controls.addListener(controls.findCode('up'), () => {
+            this.dead = !this.snake.move(up);
+        });
 
-            controls.addListener(controls.findCode('left'), () => {
-                this.snake.move(left);
-            });
+        controls.addListener(controls.findCode('down'), () => {
+            this.dead = !this.snake.move(down);
+        });
 
-            controls.addListener(controls.findCode('right'), () => {
-                this.snake.move(right);
-            });
-        } catch (e) {
-            console.log(e);
-        }
+        controls.addListener(controls.findCode('left'), () => {
+            this.dead = !this.snake.move(left);
+        });
+
+        controls.addListener(controls.findCode('right'), () => {
+            this.dead = !this.snake.move(right);
+        });
+
+        controls.addListener(controls.findCode('r'), () => {
+            console.log('restart?');
+            if (this.dead) {
+                console.log('restart?');
+                this.start();
+            }
+        });
+
+        controls.addListener(controls.findCode('space'), () => {
+            if (false === this.dead) {
+                this.pause = !this.pause;
+                this.status.update(this.pause ? 'pause' : 'playing');
+
+                if (false === this.pause) {
+                    this.cycle();
+                }
+            }
+        });
 
         this.cycle();
     }

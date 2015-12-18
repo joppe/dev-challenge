@@ -3,6 +3,7 @@
 export class Controls {
     get map() {
         return {
+            r: 82,
             up: 38,
             left: 37,
             right: 39,
@@ -11,19 +12,10 @@ export class Controls {
         };
     }
 
-    /**
-     * @param {HTMLElement} container
-     */
-    constructor(container) {
+    constructor() {
         this.listeners = {};
 
-        this.element = document.createElement('input');
-        this.element.setAttribute('type', 'text');
-
-        container.appendChild(this.element);
-
-        this.element.focus();
-        this.element.addEventListener('keyup', this.handleKey.bind(this));
+        document.body.addEventListener('keydown', this.handleKey.bind(this));
     }
 
     /**
@@ -50,6 +42,7 @@ export class Controls {
      * @param {Event} event
      */
     handleKey(event) {
+        console.log(event.keyCode);
         if (undefined !== this.listeners[event.keyCode]) {
             this.listeners[event.keyCode].forEach((callback) => {
                 callback.call(this, event);
