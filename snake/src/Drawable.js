@@ -1,11 +1,18 @@
 export class Drawable {
     /**
      * @param {number} size
+     * @param {boolean} useTransform
      */
-    constructor(size) {
-        this.size = size;
+    constructor(size, useTransform = true) {
+        this.useTransform = useTransform;
 
         this.element = document.createElement('div');
+
+        this.setDimensions(size);
+    }
+
+    setDimensions(size) {
+        this.size = size;
         this.element.style.width = this.size + 'px';
         this.element.style.height = this.size + 'px';
     }
@@ -21,8 +28,12 @@ export class Drawable {
     setPosition(position) {
         this.position = position;
 
-        this.element.style.left = this.position.x + 'px';
-        this.element.style.top = this.position.y + 'px';
+        if (this.useTransform) {
+            this.element.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
+        } else {
+            this.element.style.left = this.position.x + 'px';
+            this.element.style.top = this.position.y + 'px';
+        }
 
         return this;
     }

@@ -9,8 +9,8 @@ import {random} from './helper.js';
 import {square} from './helper.js';
 
 const SPEED = 1;
-const BASE_TIME = 300;
-const INCREASE = 0.005;
+const BASE_TIME = 350;
+const SPEED_INCREASE = 0.05;
 
 export class Game {
     /**
@@ -59,8 +59,8 @@ export class Game {
      * @returns {Vector}
      */
     randomPosition(other = null) {
-        let x = random(1, this.vector.x - 1),
-            y = random(1, this.vector.y - 1),
+        let x = random(1, this.vector.x - 3),
+            y = random(1, this.vector.y - 3),
             v = new Vector(x, y);
 
         v = v.multiply(this.unitVector);
@@ -79,9 +79,9 @@ export class Game {
         let hit = false;
 
         if (
-            this.size > this.snake.getPosition().x ||
+            0 > this.snake.getPosition().x ||
             (this.size * this.vector.x) < this.snake.getPosition().x ||
-            this.size > this.snake.getPosition().y ||
+            0 > this.snake.getPosition().y ||
             (this.size * this.vector.y) < this.snake.getPosition().y
         ) {
             hit = true;
@@ -117,8 +117,8 @@ export class Game {
 
             if (false === this.dead) {
                 if (this.canEat()) {
-                    this.speed = square(this.speed + INCREASE);
-                    this.status.update(`speed: ${this.speed}; ${INCREASE}`);
+                    this.speed += SPEED_INCREASE;
+                    this.status.update(`speed: ${this.speed}; ${SPEED_INCREASE}`);
                     this.snake.grow(3);
                     this.placeCandy();
                     this.score.add(3 * this.snake.length());

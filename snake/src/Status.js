@@ -25,6 +25,6 @@ export class Status {
     }
 
     render() {
-        this.element.innerText = `Status: ${this.status}`;
+        this.element.textContent = `Status: ${this.status}`;
     }
 }

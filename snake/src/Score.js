@@ -31,7 +31,7 @@ export class Score {
     }
 
     render() {
-        this.element.innerText = `Score: ${this.score}`;
+        this.element.textContent = `Score: ${this.score}`;
     }
 
     /**
