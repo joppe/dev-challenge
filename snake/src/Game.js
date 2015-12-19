@@ -55,21 +55,14 @@ export class Game {
     }
 
     /**
-     * @param {Vector|null} other
      * @returns {Vector}
      */
-    randomPosition(other = null) {
+    randomPosition() {
         let x = random(1, this.vector.x - 3),
             y = random(1, this.vector.y - 3),
-            v = new Vector(x, y);
+            vector = new Vector(x, y);
 
-        v = v.multiply(this.unitVector);
-
-        if (null !== other && v.isSame(other)) {
-            v = this.randomPosition(other);
-        }
-
-        return v;
+        return vector.multiply(this.unitVector);
     }
 
     /**
@@ -134,18 +127,21 @@ export class Game {
     }
 
     placeCandy() {
-        let snakePosition = this.snake.getPosition(),
-            candyPosition = this.randomPosition(snakePosition);
+        let position = this.randomPosition();
 
-        this.candy.setPosition(candyPosition);
+        while (this.snake.contains(position)) {
+            position = this.randomPosition();
+        }
+
+        this.candy.setPosition(position);
         this.candy.show();
     }
 
     placeSnake() {
-        let snakePosition = this.randomPosition(),
-            direction = snakePosition.x > ((this.size * this.vector.x) / 2) ? this.left : this.right;
+        let position = this.randomPosition(),
+            direction = position.x > ((this.size * this.vector.x) / 2) ? this.left : this.right;
 
-        this.snake.setPosition(snakePosition);
+        this.snake.setPosition(position);
         this.snake.setDirection(direction);
         this.snake.reset();
         this.snake.grow(1);
